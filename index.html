@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Математическо приключение - Седмица 4</title>
+<style>
+  :root{
+    --bg1:#fef6e4;
+    --bg2:#e0f7fa;
+    --card:#ffffff;
+    --primary:#6c5ce7;
+    --primary-dark:#5a4bd6;
+    --good:#2ecc71;
+    --bad:#ff6b6b;
+    --text:#2d2d3a;
+    --shadow: 0 8px 24px rgba(0,0,0,0.12);
+    --brand-teal:#16b3a3;
+    --brand-navy:#17235c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Comic Sans MS', 'Trebuchet MS', 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    min-height:100vh;
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px;
+  }
+  h1{
+    text-align:center;
+    font-size:1.8rem;
+    margin:8px 0 4px;
+    color:var(--primary-dark);
+    text-shadow: 1px 1px 0 #fff;
+  }
+  .subtitle{
+    text-align:center;
+    margin-bottom:18px;
+    color:#555;
+    font-size:1rem;
+  }
+  .screen{
+    width:100%;
+    max-width:920px;
+    display:none;
+  }
+  .screen.active{ display:block; }
+
+  /* ===== Brand / logo ===== */
+  .brand-big{ text-align:center; margin:4px 0 20px; }
+  .brand-logo-large{
+    display:block;
+    width:min(100%, 560px);
+    height:auto;
+    margin:0 auto;
+  }
+  .how-to-play{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    margin:0 auto 24px;
+    padding:22px clamp(16px,4vw,32px) 18px;
+    border:2px solid rgba(108,92,231,.18);
+    border-radius:24px;
+    background:linear-gradient(125deg,rgba(255,255,255,.94),rgba(235,250,255,.94),rgba(248,238,255,.94),rgba(255,250,224,.94));
+    background-size:300% 300%;
+    box-shadow:var(--shadow);
+    animation:instruction-gradient 9s ease infinite;
+  }
+  .how-to-play::before,
+  .how-to-play::after{
+    content:"";
+    position:absolute;
+    z-index:-1;
+    width:220px;
+    height:220px;
+    border-radius:50%;
+    filter:blur(4px);
+    opacity:.22;
+    animation:background-orbit 8s ease-in-out infinite alternate;
+  }
+  .how-to-play::before{ left:-90px; top:-100px; background:#54d7ca; }
+  .how-to-play::after{ right:-95px; bottom:-115px; background:#9b8cff; animation-delay:-3s; }
+  @keyframes instruction-gradient{
+    0%,100%{ background-position:0% 50%; }
+    50%{ background-position:100% 50%; }
+  }
+  @keyframes background-orbit{
+    from{ transform:translate(0,0) scale(1); }
+    to{ transform:translate(34px,24px) scale(1.18); }
+  }
+  .floating-math{ position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+  .floating-math span{
+    position:absolute;
+    color:var(--primary);
+    opacity:.13;
+    font:900 clamp(1.4rem,4vw,2.5rem)/1 'Segoe UI',sans-serif;
+    animation:float-symbol 5s ease-in-out infinite;
+  }
+  .floating-math span:nth-child(1){ left:5%; top:16%; }
+  .floating-math span:nth-child(2){ right:8%; top:12%; animation-delay:-1.2s; }
+  .floating-math span:nth-child(3){ left:10%; bottom:10%; animation-delay:-2.4s; }
+  .floating-math span:nth-child(4){ right:13%; bottom:14%; animation-delay:-3.1s; }
+  .floating-math span:nth-child(5){ left:48%; top:5%; animation-delay:-.7s; }
+  @keyframes float-symbol{
+    0%,100%{ transform:translateY(0) rotate(-7deg); }
+    50%{ transform:translateY(-13px) rotate(7deg); }
+  }
+  .how-to-play h2{
+    margin:0 0 8px;
+    text-align:center;
+    color:var(--primary-dark);
+    font-size:1.35rem;
+  }
+  .typing-intro{
+    min-height:2.8em;
+    margin:0 auto 12px;
+    max-width:720px;
+    text-align:center;
+    font-weight:700;
+    line-height:1.45;
+    color:#3f3b5c;
+  }
+  .how-to-list{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px 14px;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .how-to-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    min-height:62px;
+    padding:10px 12px;
+    border:1px solid rgba(108,92,231,.14);
+    border-radius:14px;
+    background:rgba(255,255,255,.72);
+    line-height:1.4;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .25s ease,transform .25s ease;
+  }
+  .how-to-list li.is-typing,
+  .how-to-list li.is-complete{ opacity:1; transform:translateY(0); }
+  .step-number{
+    display:inline-flex;
+    flex:0 0 28px;
+    width:28px;
+    height:28px;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),#9a8cff);
+    color:#fff;
+    font-weight:900;
+    box-shadow:0 3px 9px rgba(108,92,231,.25);
+  }
+  .type-target{ min-height:1.4em; }
+  .type-target.typing-active::after,
+  .typing-intro.typing-active::after{
+    content:"|";
+    margin-left:2px;
+    color:var(--primary);
+    animation:typing-cursor .7s steps(1) infinite;
+  }
+  @keyframes typing-cursor{ 50%{ opacity:0; } }
+  .typing-tip{
+    min-height:2em;
+    margin:14px 0 8px;
+    text-align:center;
+    color:#735d16;
+    font-weight:700;
+  }
+  .show-instructions-btn{
+    display:block;
+    margin:8px auto 0;
+    padding:7px 14px;
+    border:1px solid rgba(108,92,231,.3);
+    border-radius:999px;
+    background:rgba(255,255,255,.82);
+    color:var(--primary-dark);
+    font:700 .82rem inherit;
+    cursor:pointer;
+  }
+  .show-instructions-btn:hover{ background:#fff; transform:translateY(-1px); }
+  @media (max-width:700px){
+    .how-to-list{ grid-template-columns:1fr; }
+    .how-to-list li{ min-height:0; }
+  }
+  .logo-corner{
+    position:fixed;
+    bottom:14px;
+    right:14px;
+    width:clamp(42px, 7vw, 68px);
+    height:auto;
+    opacity:0.9;
+    z-index:500;
+    pointer-events:none;
+  }
+  @media (max-width:600px){
+    .logo-corner{ bottom:8px; right:8px; width:46px; }
+  }
+
+  .levels-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap:16px;
+    margin-top:10px;
+  }
+  .level-card{
+    background:var(--card);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:18px 14px;
+    text-align:center;
+    cursor:pointer;
+    border:3px solid transparent;
+    transition: transform .15s ease, border-color .15s ease;
+    position:relative;
+  }
+  .level-card:hover{ transform: translateY(-4px) scale(1.02); border-color: var(--primary); }
+  .level-card .emoji{ font-size:2.6rem; }
+  .level-card h3{ margin:8px 0 2px; font-size:1.05rem; }
+  .level-card p{ margin:0; font-size:.8rem; color:#777; }
+  .stars{ margin-top:8px; font-size:1.1rem; letter-spacing:2px; }
+  .badge-done{
+    position:absolute; top:-10px; right:-10px;
+    background:var(--good); color:#fff; border-radius:50%;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    font-size:.9rem; box-shadow:var(--shadow);
+  }
+  .mystery-note{ font-size:.7rem; color:#aaa; margin-top:6px; font-style:italic; }
+
+  .game-wrap{
+    background:var(--card);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:20px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:20px;
+  }
+  @media (max-width:700px){
+    .game-wrap{ grid-template-columns: 1fr; }
+  }
+  .animal-box{
+    background: linear-gradient(180deg,#fffef2,#eaffea);
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px;
+    min-height:260px;
+  }
+  .animal-box svg{ width:100%; max-width:280px; height:auto; }
+
+  .piece{
+    opacity:0;
+    transform-origin:center;
+    transition: opacity .5s ease, transform .5s ease;
+    transform:scale(.7);
+    fill:none;
+    stroke:#8a8a8a;
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .piece.revealed{ opacity:1; transform:scale(1); }
+
+  .animal-stage.is-complete .piece,
+  .gallery-item .piece,
+  #complete-animal-final .piece{
+    fill: var(--c, none);
+    stroke: var(--cs, #555);
+  }
+  .animal-stage.is-complete .piece.piece-line,
+  .gallery-item .piece.piece-line,
+  #complete-animal-final .piece.piece-line{
+    fill:none;
+    stroke: var(--cs, #444);
+  }
+  @keyframes pop-in{
+    0%{ transform:scale(.65) rotate(0deg); }
+    38%{ transform:scale(1.22) rotate(-6deg); }
+    62%{ transform:scale(.94) rotate(5deg); }
+    82%{ transform:scale(1.08) rotate(-2deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+  @keyframes happy-bounce{
+    0%,100%{ transform:translateY(0) rotate(-1deg) scale(1); }
+    45%{ transform:translateY(-14px) rotate(2deg) scale(1.08); }
+    65%{ transform:translateY(2px) rotate(-1deg) scale(.99); }
+  }
+  @keyframes mouth-talk{
+    0%,100%{ transform:scaleY(.35) scaleX(1); }
+    50%{ transform:scaleY(1.45) scaleX(1.08); }
+  }
+  @keyframes gentle-wiggle{
+    0%,100%{ transform:rotate(-4deg); }
+    50%{ transform:rotate(4deg); }
+  }
+  .animal-stage.is-complete svg,
+  #complete-animal-final svg{
+    animation: pop-in 1.1s ease;
+  }
+  #complete-animal-final.is-vocalizing .animal-mouth,
+  #complete-animal-final.is-speaking .animal-mouth{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:mouth-talk .18s ease-in-out infinite;
+  }
+  #complete-animal-final{
+    width:min(100%, 320px);
+    margin:8px auto 14px;
+  }
+  #complete-animal-final svg{
+    animation:pop-in 1.1s ease, happy-bounce 2.6s 1.15s ease-in-out infinite;
+    transform-origin:center;
+  }
+  .animal-stage.is-complete .piece[data-wiggle],
+  #complete-animal-final .piece[data-wiggle]{
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: gentle-wiggle 1.6s ease-in-out infinite;
+  }
+
+  .quiz-box{ display:flex; flex-direction:column; justify-content:center; }
+  .top-row{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+  }
+  .top-row button{
+    background:none; border:none; color:var(--primary-dark); font-weight:bold; cursor:pointer; font-size:.95rem;
+  }
+  .progress-bar-outer{
+    background:#eee; border-radius:10px; height:10px; overflow:hidden; margin-bottom:14px;
+  }
+  .progress-bar-inner{
+    background:linear-gradient(90deg,#6c5ce7,#a29bfe);
+    height:100%; width:0%; transition:width .4s ease;
+  }
+  .question-count{ font-size:.85rem; color:#888; margin-bottom:6px; }
+  .question-text{
+    font-size:1.3rem;
+    font-weight:bold;
+    min-height:60px;
+    display:flex;
+    align-items:center;
+    color:var(--text);
+  }
+
+  .op-picker{ margin-top:12px; }
+  .op-picker-label{ font-size:.95rem; color:#555; margin-bottom:8px; font-weight:bold; }
+  .op-picker-buttons{ display:flex; gap:10px; }
+  .op-pick-btn{
+    flex:1;
+    font-size:1.6rem;
+    padding:14px 0;
+    border-radius:14px;
+    border:2px solid #ddd;
+    background:#fff;
+    cursor:pointer;
+    transition: transform .1s ease, border-color .15s ease, background .15s ease;
+  }
+  .op-pick-btn:hover{ border-color:var(--primary); transform:translateY(-2px); }
+  .op-pick-btn.correct{ border-color:var(--good); background:#eafff1; }
+  .op-pick-btn.wrong{ border-color:var(--bad); background:#ffecec; animation: shake .4s; }
+  .op-picker-feedback{ margin-top:10px; font-weight:bold; min-height:24px; font-size:.95rem; }
+  .op-picker-feedback.good{ color:var(--good); }
+  .op-picker-feedback.bad{ color:var(--bad); }
+
+  #answer-area{ animation: fadeIn .4s ease; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+
+  .answer-row{ display:flex; gap:8px; margin-top:10px; }
+  input#answer-input{
+    flex:1;
+    font-size:1.3rem;
+    padding:10px 14px;
+    border-radius:12px;
+    border:2px solid #ddd;
+    outline:none;
+    text-align:center;
+    min-width:0;
+  }
+  input#answer-input:focus{ border-color:var(--primary); }
+  button.primary{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:12px;
+    font-size:1.05rem;
+    font-weight:bold;
+    cursor:pointer;
+    transition: background .15s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  button.primary:hover{ background:var(--primary-dark); }
+  button.primary:active{ transform:scale(.96); }
+  button.scratch-toggle{
+    background:#fff8e1;
+    border:2px solid #f0d878;
+    color:#8a6d1a;
+    border-radius:12px;
+    font-size:1.2rem;
+    cursor:pointer;
+    padding:0 10px;
+  }
+  button.scratch-toggle.active{ background:#ffe9a8; }
+  .feedback{
+    margin-top:14px;
+    min-height:30px;
+    font-size:1.05rem;
+    font-weight:bold;
+  }
+  .feedback.good{ color:var(--good); }
+  .feedback.bad{ color:var(--bad); }
+  .shake{ animation: shake .4s; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); }
+    40%{ transform:translateX(8px); }
+    60%{ transform:translateX(-6px); }
+    80%{ transform:translateX(6px); }
+  }
+  .pop{ animation: pop .4s; }
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.15); }
+    100%{ transform:scale(1); }
+  }
+
+  .scratch-panel{
+    margin-top:12px;
+    background:#fffdf5;
+    border:2px dashed #e3d6a0;
+    border-radius:14px;
+    padding:12px;
+    display:none;
+    overflow-x:auto;
+  }
+  .scratch-panel.open{ display:block; }
+  .scratch-hint{ font-size:.78rem; color:#8a6d1a; margin-bottom:8px; }
+  .horizontal-multiplication{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-width:max-content;
+    padding:10px 4px 4px;
+  }
+  .horizontal-multiplication .factor{
+    display:inline-flex;
+    min-width:52px;
+    min-height:46px;
+    align-items:center;
+    justify-content:center;
+    padding:6px 12px;
+    border:2px solid #d8d0ff;
+    border-radius:12px;
+    background:#fff;
+    color:var(--text);
+    font-size:1.35rem;
+    font-weight:900;
+  }
+  .horizontal-multiplication .multiply-sign,
+  .horizontal-multiplication .equals-sign{
+    color:var(--primary-dark);
+    font-size:1.55rem;
+    font-weight:900;
+  }
+  .horizontal-multiplication .product-input{
+    width:88px;
+    min-height:46px;
+    border:2px solid #d8d0ff;
+    border-radius:12px;
+    background:#fff;
+    color:var(--text);
+    font:900 1.2rem inherit;
+    text-align:center;
+    outline:none;
+  }
+  .horizontal-multiplication .product-input:focus{ border-color:var(--primary); }
+
+  table.vtable{
+    border-collapse:collapse;
+    margin-bottom:2px;
+  }
+  table.vtable td{
+    width:34px;
+    height:34px;
+    min-width:34px;
+    text-align:center;
+    vertical-align:middle;
+    font-weight:bold;
+    font-size:1rem;
+    color:var(--text);
+    padding:2px;
+  }
+  td.vcell input{
+    width:28px; height:28px;
+    text-align:center;
+    border-radius:6px;
+    border:1.5px solid #ddd;
+    font-size:.95rem;
+    padding:0;
+    font-family:inherit;
+  }
+  td.vcell.carry input{
+    border-style:dashed;
+    color:#c0392b;
+    font-size:.7rem;
+    background:#fff;
+  }
+  td.vcell.borrow-toggle{ cursor:pointer; position:relative; }
+  td.vcell.borrow-toggle span{
+    display:inline-block;
+    width:28px; height:28px;
+    line-height:28px;
+    border-radius:6px;
+    border:1.5px solid #eee;
+    background:#fff;
+  }
+  td.vcell.borrow-toggle.has-dot span::after{
+    content:"•";
+    position:absolute;
+    top:-4px; right:6px;
+    color:#e74c3c;
+    font-size:1.3rem;
+    line-height:1;
+  }
+  td.vcell.op{ font-size:1.15rem; color:#555; }
+  td.lineline{ border-top:2.5px solid #444; padding:0; height:4px; }
+
+  .division-tail-card{
+    min-width:max-content;
+    padding:14px 16px 16px;
+    border:1.5px solid #b9d4ff;
+    border-radius:16px;
+    background:linear-gradient(145deg,#f2f7ff,#e8f1ff);
+    color:#273750;
+  }
+  .division-tail-title{
+    margin-bottom:12px;
+    color:#2449aa;
+    font-size:.9rem;
+    font-weight:900;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .division-equation{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 14px 28px;
+    font-size:1.3rem;
+    font-weight:900;
+  }
+  .division-dividend{ display:flex; gap:10px; }
+  .division-equation .fixed-digit{
+    display:inline-flex;
+    width:40px;
+    height:40px;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3rem;
+  }
+  .division-equation .division-dot-toggle{ position:relative; cursor:pointer; border-radius:8px; }
+  .division-equation .division-dot-toggle:hover{ background:rgba(91,131,223,.1); }
+  .division-equation .division-dot-toggle.has-dot::after{
+    content:"•";
+    position:absolute;
+    top:-13px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#e34455;
+    font-size:1.35rem;
+    line-height:1;
+  }
+  .division-input{
+    width:40px;
+    height:40px;
+    border:2px solid #ccd6e5;
+    border-radius:9px;
+    background:#fff;
+    color:#273750;
+    font-family:inherit;
+    font-size:1.3rem;
+    font-weight:900;
+    text-align:center;
+    outline:none;
+  }
+  .division-input:focus{ border-color:#5b83df; box-shadow:0 0 0 3px rgba(91,131,223,.14); }
+  .division-quotient{ display:flex; gap:10px; }
+  .division-work{ display:flex; flex-direction:column; gap:1px; }
+  .division-work-row{
+    display:grid;
+    grid-template-columns:28px repeat(var(--division-cols),42px) 112px;
+    align-items:center;
+    min-height:42px;
+  }
+  .division-work-row.division-line-row{ min-height:10px; }
+  .division-work-row.division-line-row .division-work-cell{ min-height:10px; height:10px; }
+  .division-sign{
+    color:#e34455;
+    font-size:1.45rem;
+    font-weight:900;
+    text-align:center;
+  }
+  .division-work-cell{
+    display:flex;
+    width:42px;
+    min-height:40px;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3rem;
+    font-weight:900;
+  }
+  .division-line-cell{ align-self:stretch; border-bottom:3px solid #34445d; }
+  .division-remainder-label{
+    padding-left:12px;
+    color:#8190aa;
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.03em;
+    white-space:nowrap;
+  }
+  .division-remainder-label::before{ content:"← "; }
+
+  .steps-wrap{ display:flex; flex-direction:column; gap:10px; }
+  .step-box{ background:#fff; border-radius:10px; padding:8px 10px; border:1px solid #eee; overflow-x:auto; }
+  .step-label{ font-size:.78rem; font-weight:bold; color:#6c5ce7; margin-bottom:6px; }
+  .note-tip{ font-size:.85rem; color:#8a6d1a; background:#fff8e1; border-radius:10px; padding:8px 10px; }
+
+  .complete-box{
+    text-align:center;
+    padding:20px;
+  }
+  .complete-box .emoji-big{ font-size:4rem; }
+  .complete-box h2{ color:var(--primary-dark); }
+  .complete-box .stars-big{ font-size:2.4rem; margin:10px 0; }
+  .star-explanation{
+    max-width:560px;
+    margin:0 auto 12px;
+    padding:9px 14px;
+    border-radius:12px;
+    background:#f4f0ff;
+    color:#55489a;
+    font-size:.86rem;
+    line-height:1.45;
+  }
+  .btn-row{ display:flex; gap:12px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+
+  .animal-info-card{
+    margin:18px auto 0;
+    max-width:620px;
+    border-radius:18px;
+    padding:16px 20px;
+    text-align:left;
+    box-shadow:var(--shadow);
+  }
+  .animal-info-card h4{ margin:0 0 10px; font-size:1.1rem; }
+  .animal-info-card ul{ margin:0; padding-left:22px; }
+  .animal-info-card li{ margin-bottom:8px; font-size:.92rem; line-height:1.45; }
+  @media (prefers-reduced-motion:reduce){
+    #complete-animal-final svg,
+    #complete-animal-final .piece[data-wiggle],
+    #complete-animal-final .animal-mouth,
+    .how-to-play,
+    .how-to-play::before,
+    .how-to-play::after,
+    .floating-math span{ animation:none; }
+  }
+
+  .confetti-piece{
+    position:fixed;
+    top:-10px;
+    width:10px; height:10px;
+    border-radius:2px;
+    pointer-events:none;
+    z-index:999;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(360deg); opacity:0.3; }
+  }
+
+  .gallery-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
+    gap:14px;
+    margin-top:14px;
+  }
+  .gallery-grid svg{ width:100%; height:auto; }
+  .gallery-item{ background:#fff; border-radius:14px; padding:8px; box-shadow:var(--shadow); text-align:center; font-size:.8rem; }
+</style>
+</head>
+<body>
+
+<img class="logo-corner" src="math-adventure-week4-assets/logo-small.png" alt="">
+
+<h1>🎲 Математическо приключение</h1>
+<div class="subtitle">Седмица 4 &middot; Реши задачите, за да разкриеш и събудиш животинчето!</div>
+
+<div class="screen active" id="screen-levels">
+  <div class="brand-big">
+    <img class="brand-logo-large" src="math-adventure-week4-assets/logo-large.png" alt="Интерактивна математика — Валя Витковска">
+  </div>
+  <section class="how-to-play" aria-labelledby="how-to-title" aria-label="Подробни указания за играта">
+    <div class="floating-math" aria-hidden="true"><span>+</span><span>−</span><span>·</span><span>÷</span><span>★</span></div>
+    <h2 id="how-to-title">🎮 Как се играе?</h2>
+    <div class="typing-intro type-target" id="typing-intro" data-text="Твоята мисия е да решаваш математически задачи и стъпка по стъпка да събудиш скритото животинче за всеки ден!"></div>
+    <ol class="how-to-list" id="how-to-list">
+      <li><span class="step-number">1</span><span class="type-target" data-text="Избери ден от картите по-долу. Всеки ден упражнява различни математически умения."></span></li>
+      <li><span class="step-number">2</span><span class="type-target" data-text="Прочети внимателно задачата, пресметни и въведи числото в полето „Твоят отговор“."></span></li>
+      <li><span class="step-number">3</span><span class="type-target" data-text="При текстова задача първо избери правилното действие: събиране, изваждане, умножение или деление."></span></li>
+      <li><span class="step-number">4</span><span class="type-target" data-text="Ако имаш нужда от помощ, натисни бутона с калкулатора и използвай полето за смятане стъпка по стъпка."></span></li>
+      <li><span class="step-number">5</span><span class="type-target" data-text="Всеки верен отговор разкрива нова част от животинчето. При грешка опитай отново — можеш да поправяш отговора си."></span></li>
+      <li><span class="step-number">6</span><span class="type-target" data-text="След последната задача животинчето се събужда, издава своя звук, поздравява те и ти показва пет любопитни факта."></span></li>
+      <li><span class="step-number">7</span><span class="type-target" data-text="Звездите показват колко уверено си решил теста: 3 при до 3 грешки, 2 при 4–7 и 1 при 8 или повече."></span></li>
+      <li><span class="step-number">8</span><span class="type-target" data-text="При всяко ново стартиране животинчетата и звездите отново са скрити. Избери който пожелаеш ден и го изиграй наново."></span></li>
+    </ol>
+    <div class="typing-tip type-target" id="typing-tip" data-text="💡 Не бързай — мисли спокойно, използвай помощното поле и се забавлявай!"></div>
+    <button type="button" class="show-instructions-btn" id="show-instructions-btn">Покажи целия текст</button>
+  </section>
+  <div class="levels-grid" id="levels-grid"></div>
+</div>
+
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+    <div class="animal-box" id="animal-stage"></div>
+    <div class="quiz-box">
+      <div class="top-row">
+        <button onclick="goToLevels()">⬅ Нива</button>
+        <span id="day-title-label"></span>
+      </div>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar"></div></div>
+      <div class="question-count" id="question-count"></div>
+      <div class="question-text" id="question-text"></div>
+
+      <div class="op-picker" id="op-picker" style="display:none;">
+        <div class="op-picker-label">Кое действие ще използваш, за да решиш задачата?</div>
+        <div class="op-picker-buttons">
+          <button type="button" class="op-pick-btn" data-op="+">➕</button>
+          <button type="button" class="op-pick-btn" data-op="-">➖</button>
+          <button type="button" class="op-pick-btn" data-op="*">✖️</button>
+          <button type="button" class="op-pick-btn" data-op="/">➗</button>
+        </div>
+        <div class="op-picker-feedback" id="op-picker-feedback"></div>
+      </div>
+
+      <div id="answer-area">
+        <div class="answer-row">
+          <input type="number" id="answer-input" placeholder="твоят отговор" autocomplete="off">
+          <button type="button" class="scratch-toggle" id="scratch-toggle-btn" title="Поле за смятане">🧮</button>
+          <button class="primary" onclick="checkAnswer()">Провери</button>
+        </div>
+        <div class="scratch-panel" id="scratch-panel"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-complete">
+  <div class="game-wrap" style="grid-template-columns:1fr;">
+    <div class="complete-box">
+      <div class="emoji-big" id="complete-emoji">🎉</div>
+      <h2 id="complete-title">Браво!</h2>
+      <div id="complete-animal-final"></div>
+      <div class="stars-big" id="complete-stars"></div>
+      <div class="star-explanation" id="star-explanation"></div>
+      <p id="complete-msg"></p>
+      <div class="animal-info-card" id="animal-info-card"></div>
+      <div class="btn-row">
+        <button class="primary" onclick="goToLevels()">Към нивата</button>
+        <button class="primary" id="next-day-btn" onclick="nextDay()">Следващ ден ➜</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="screen-gallery">
+  <div class="complete-box">
+    <div class="emoji-big">🏆</div>
+    <h2>Поздравления! Събра всички животинчета от седмица 4!</h2>
+    <div class="gallery-grid" id="gallery-grid"></div>
+    <div class="btn-row"><button class="primary" onclick="goToLevels()">Играй пак</button></div>
+  </div>
+</div>
+
+<script>
+/* ================= RANDOM HELPERS ================= */
+function randInt(min, max){
+  if(max < min){ const t=min; min=max; max=t; }
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+function randMultiple(step, min, max){
+  const lo = Math.ceil(min/step), hi = Math.floor(max/step);
+  return randInt(lo,hi)*step;
+}
+function genCleanDivision(dMin,dMax,qMin,qMax){
+  const d = randInt(dMin,dMax);
+  const q = randInt(qMin,qMax);
+  return {dividend:d*q, divisor:d, quotient:q};
+}
+
+/* ================= QUESTION GENERATORS (fresh numbers every load) =================
+   Each question: { t: text, a: answer, s: scratch-spec, word?: true, opFor?: '+'|'-'|'*'|'/' }
+   Scratch spec:
+     ['+', a, b]  vertical addition   (a or b may be null => editable "carry the result" slot)
+     ['-', a, b]  vertical subtraction (borrow-toggle + "write 10 above" box on the fixed side)
+     ['*', a, b]  vertical multiplication (both always known)
+     ['/', a, b]  long-division "tail" table (a=dividend, b=divisor)
+     ['steps', [...specs..., ['note', text]?]]  multi-step scaffolding for order-of-operations
+*/
+function genDay1(){
+  const q = [];
+  let a,b;
+
+  a = randMultiple(10,30,90); b = randMultiple(10,10,40);
+  q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a = randMultiple(10,50,90); b = randMultiple(10,10,40);
+  q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  a = randMultiple(5,30,90); b = randMultiple(5,5,40);
+  q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a = randMultiple(5,50,90); b = randMultiple(5,5,40);
+  q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+
+  for(let i=0;i<3;i++){
+    a = randInt(100,500); b = randInt(100,400);
+    q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  }
+  for(let i=0;i<3;i++){
+    a = randInt(500,950); b = randInt(100,450);
+    q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  }
+
+  a = randInt(200,600); b = randInt(150,399);
+  q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a = randInt(600,950); b = randInt(200,499);
+  q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+
+  a = randInt(120,400); b = randInt(50,220);
+  q.push({t:`В книжарница имало ${a} тетрадки. Доставили още ${b}. Колко тетрадки станали общо?`, a:a+b, s:['+',a,b], word:true, opFor:'+'});
+  a = randInt(80,150); b = randInt(10,60);
+  q.push({t:`В кутия имало ${a} молива. Извадили ${b}. Колко молива останали?`, a:a-b, s:['-',a,b], word:true, opFor:'-'});
+
+  return q;
+}
+
+function genDay2(){
+  const q = [];
+  let a,b;
+  for(let i=0;i<4;i++){
+    a = randInt(2,9); b = randInt(2,9);
+    q.push({t:`${a} · ${b} =`, a:a*b, s:['*',Math.max(a,b),Math.min(a,b)]});
+  }
+  for(let i=0;i<6;i++){
+    a = randInt(2,9); b = randInt(2,9);
+    q.push({t:`${a} · ${b} =`, a:a*b, s:['*',Math.max(a,b),Math.min(a,b)]});
+  }
+  for(let i=0;i<2;i++){
+    a = randInt(11,14); b = randInt(2,4);
+    q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  }
+  a = randInt(4,9); b = randInt(4,8);
+  q.push({t:`В един пакет има ${a} карти. Колко карти има в ${b} такива пакета?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  a = randInt(4,9); b = randInt(4,8);
+  q.push({t:`В една редица има ${a} столчета. Колко столчета има в ${b} такива редици?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  return q;
+}
+
+function genDay3(){
+  const q = [];
+  let a,b;
+  a = randMultiple(10,20,40); b = randInt(2,5);
+  q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  a = randMultiple(10,20,40); b = randInt(2,5);
+  q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  a = randInt(11,14); b = randInt(2,4);
+  q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  a = randInt(11,14); b = randInt(2,4);
+  q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+
+  for(let i=0;i<6;i++){
+    a = randInt(20,130); b = randInt(2,4);
+    q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  }
+  for(let i=0;i<2;i++){
+    a = randInt(100,250); b = randInt(2,4);
+    q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  }
+  a = randInt(15,30); b = randInt(2,4);
+  q.push({t:`Една кутия съдържа ${a} флумастера. Колко флумастера има в ${b} кутии?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  a = randInt(4,9); b = randInt(4,8);
+  q.push({t:`Един билет струва ${a} лв. Колко струват ${b} такива билета?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  return q;
+}
+
+function genDay4(){
+  const q = [];
+  let r;
+  for(let i=0;i<4;i++){
+    r = genCleanDivision(2,5,6,9);
+    q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  }
+  for(let i=0;i<6;i++){
+    r = genCleanDivision(2,5,10,36);
+    q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  }
+  for(let i=0;i<2;i++){
+    r = genCleanDivision(7,8,6,9);
+    q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  }
+  r = genCleanDivision(4,8,6,12);
+  q.push({t:`${r.dividend} бонбона са разделени поравно между ${r.divisor} деца. По колко бонбона получава всяко дете?`, a:r.quotient, s:['/',r.dividend,r.divisor], word:true, opFor:'/'});
+  r = genCleanDivision(4,8,6,12);
+  q.push({t:`${r.dividend} молива са поставени поравно в ${r.divisor} кутии. По колко молива има във всяка кутия?`, a:r.quotient, s:['/',r.dividend,r.divisor], word:true, opFor:'/'});
+  return q;
+}
+
+function genMixedAddMult(){
+  const c=randInt(2,9), d=randInt(2,9), inner=c*d, outer=randInt(20,80);
+  return {t:`${outer} + ${c} · ${d} =`, a:outer+inner, s:['steps',[['*',c,d],['+',outer,null]]]};
+}
+function genMixedSubMult(){
+  const c=randInt(2,9), d=randInt(2,9), inner=c*d, outer=randInt(inner+10,inner+80);
+  return {t:`${outer} - ${c} · ${d} =`, a:outer-inner, s:['steps',[['*',c,d],['-',outer,null]]]};
+}
+function genMixedAddDiv(){
+  const r=genCleanDivision(2,5,4,9), outer=randInt(10,50);
+  return {t:`${r.dividend} : ${r.divisor} + ${outer} =`, a:r.quotient+outer, s:['steps',[['/',r.dividend,r.divisor],['+',null,outer]]]};
+}
+function genMixedSubDiv(){
+  const r=genCleanDivision(2,5,4,9), outer=randInt(50,99);
+  return {t:`${outer} - ${r.dividend} : ${r.divisor} =`, a:outer-r.quotient, s:['steps',[['/',r.dividend,r.divisor],['-',outer,null]]]};
+}
+
+function genDay5(){
+  const q = [];
+  let a,b,r;
+  a=randInt(2,9); b=randInt(2,9); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',Math.max(a,b),Math.min(a,b)]});
+  r=genCleanDivision(2,5,4,9); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  a=randInt(20,70); b=randInt(10,30); q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a=randInt(50,90); b=randInt(10,45); q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+
+  const patterns = [genMixedAddMult, genMixedSubMult, genMixedAddDiv, genMixedSubDiv];
+  for(let i=0;i<7;i++){
+    q.push(patterns[i % patterns.length]());
+  }
+
+  const c2=randInt(2,9), d2=randInt(2,9), mult2=c2*d2;
+  const r2=genCleanDivision(2,5,4,9);
+  q.push({t:`${r2.dividend} : ${r2.divisor} + ${c2} · ${d2} =`, a:r2.quotient+mult2, s:['steps',[['/',r2.dividend,r2.divisor],['*',c2,d2],['note','Събери резултатите от двете стъпки, за да получиш отговора.']]]});
+
+  const boxes=randInt(3,8), perBox=randInt(4,9), extra=randInt(5,20);
+  q.push({t:`В ${boxes} кутии има по ${perBox} топки. Добавят още ${extra} топки. Колко топки има общо?`, a:boxes*perBox+extra, s:['steps',[['*',boxes,perBox],['+',null,extra]]], word:true, opFor:'*'});
+
+  const money=randInt(80,150), qty=randInt(3,6), price=randInt(2,5);
+  q.push({t:`Иван има ${money} лв. Купува ${qty} тетрадки по ${price} лв. Колко лева му остават?`, a:money-qty*price, s:['steps',[['*',qty,price],['-',money,null]]], word:true, opFor:'*'});
+
+  return q;
+}
+
+function genDay6(){
+  const q = [];
+  let a,b,r;
+  a=randInt(2,9); b=randInt(2,9); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',Math.max(a,b),Math.min(a,b)]});
+  r=genCleanDivision(2,7,4,9); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  a=randInt(100,400); b=randInt(50,300); q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a=randInt(200,400); b=randInt(50,150); q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  a=randInt(300,500); b=randInt(100,300); q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a=randInt(500,900); b=randInt(150,400); q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  a=randInt(20,40); b=randInt(2,3); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  a=randInt(100,200); b=randInt(2,3); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  r=genCleanDivision(2,5,10,40); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  r=genCleanDivision(2,5,10,40); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  q.push(genMixedAddMult());
+  q.push(genMixedSubDiv());
+  a=randInt(10,25); b=randInt(3,6);
+  q.push({t:`В една кутия има ${a} кубчета. Колко кубчета има в ${b} такива кутии?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  a=randInt(300,500); b=randInt(100,250);
+  q.push({t:`В магазин имало ${a} химикалки. Продали ${b}. Колко химикалки останали?`, a:a-b, s:['-',a,b], word:true, opFor:'-'});
+  return q;
+}
+
+function genDay7(){
+  const q = [];
+  let a,b,r;
+  a=randInt(5,9); b=randInt(5,9); q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a=randInt(11,18); b=randInt(5,9); q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  a=randInt(2,9); b=randInt(2,9); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',Math.max(a,b),Math.min(a,b)]});
+  r=genCleanDivision(2,9,2,9); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  a=randInt(300,500); b=randInt(200,400); q.push({t:`${a} + ${b} =`, a:a+b, s:['+',a,b]});
+  a=randInt(700,900); b=randInt(200,500); q.push({t:`${a} - ${b} =`, a:a-b, s:['-',a,b]});
+  a=randInt(20,40); b=randInt(2,3); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  a=randInt(100,300); b=randInt(2,3); q.push({t:`${a} · ${b} =`, a:a*b, s:['*',a,b]});
+  r=genCleanDivision(2,5,10,40); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  r=genCleanDivision(2,5,10,40); q.push({t:`${r.dividend} : ${r.divisor} =`, a:r.quotient, s:['/',r.dividend,r.divisor]});
+  q.push(genMixedSubMult());
+  const c=randInt(2,9), d=randInt(2,9), mult=c*d;
+  const rr=genCleanDivision(2,5,4,9);
+  q.push({t:`${rr.dividend} : ${rr.divisor} + ${c} · ${d} =`, a:rr.quotient+mult, s:['steps',[['/',rr.dividend,rr.divisor],['*',c,d],['note','Събери резултатите от двете стъпки.']]]});
+  a=randInt(4,9); b=randInt(4,8);
+  q.push({t:`В ${a} еднакви пакета има по ${b} стикера. Колко стикера има общо?`, a:a*b, s:['*',a,b], word:true, opFor:'*'});
+  const total=randInt(300,450), taken=randInt(80,180), returned=randInt(20,60);
+  q.push({t:`В библиотеката имало ${total} книги. Взели ${taken}, после върнали ${returned}. Колко книги има сега?`, a:total-taken+returned, s:['steps',[['-',total,taken],['note',`Прибави ${returned} към резултата от стъпка 1, за да получиш крайния отговор.`]]], word:true, opFor:'-'});
+  return q;
+}
+
+/* ================= DAY METADATA (static) + fresh questions per load ================= */
+const DAY_META = [
+  {
+    title: "Ден 1 — Събиране и изваждане до 1000",
+    emoji: "🐱", icon: "➕➖", animal: "cat", color: "#f4a261",
+    factsTitle: "Любопитно за котките",
+    habitatBg: "linear-gradient(160deg,#ffe8d6,#ffd3b0)",
+    habitatText: "#7a3b12",
+    facts: [
+      "Котките имат над 20 мускула само в ушите си!",
+      "Едно коте може да скача до 5 пъти по-високо от собствения си ръст.",
+      "Котките мъркат не само когато са доволни, но и за да се успокоят.",
+      "Мустаците помагат на котката да усеща предметите наоколо и да преценява дали ще мине през тесен отвор.",
+      "Котките могат да движат ушите си поотделно и така много точно откриват откъде идва звукът."
+    ],
+    gen: genDay1
+  },
+  {
+    title: "Ден 2 — Таблица за умножение",
+    emoji: "🐶", icon: "✖️", animal: "dog", color: "#c68958",
+    factsTitle: "Любопитно за кучетата",
+    habitatBg: "linear-gradient(160deg,#e8f5d0,#c9e8a0)",
+    habitatText: "#3a4d1a",
+    facts: [
+      "Кучетата подушват над 10 000 пъти по-добре от хората!",
+      "Отпечатъкът от носа на всяко куче е уникален — също като пръстов отпечатък.",
+      "Кучетата въртят опашка наляво, когато са нервни, и надясно, когато са щастливи.",
+      "Кучетата чуват много по-високи звуци от тези, които човешкото ухо може да долови.",
+      "Те се охлаждат най-вече чрез учестено дишане, а потните им жлези са предимно по възглавничките на лапите."
+    ],
+    gen: genDay2
+  },
+  {
+    title: "Ден 3 — Умножение с едноцифрено число",
+    emoji: "🐰", icon: "✖️", animal: "rabbit", color: "#f7a8c4",
+    factsTitle: "Любопитно за зайците",
+    habitatBg: "linear-gradient(160deg,#ffe3ef,#ffc4dd)",
+    habitatText: "#7a1f4d",
+    facts: [
+      "Зайците могат да въртят ушите си на 180 градуса, за да чуват отвсякъде.",
+      "Зъбите на заека растат през целия му живот.",
+      "Когато е щастлив, заекът подскача рязко във въздуха — това се нарича „бинки“.",
+      "Очите отстрани на главата дават на заека много широко зрително поле.",
+      "Зайците общуват с движения на ушите и тялото, а при опасност могат да тропат със задните си лапи."
+    ],
+    gen: genDay3
+  },
+  {
+    title: "Ден 4 — Лесно деление и проверка",
+    emoji: "🐻", icon: "➗", animal: "bear", color: "#a97155",
+    factsTitle: "Любопитно за мечките",
+    habitatBg: "linear-gradient(160deg,#e0d3c0,#c2a888)",
+    habitatText: "#4a3418",
+    facts: [
+      "Мечките могат да подушат храна от няколко километра разстояние.",
+      "През зимата много мечки изпадат в дълбок сън, наречен хибернация.",
+      "Мечката може да тича бързо колкото кон на къси разстояния.",
+      "Полярната мечка има черна кожа, а космите на козината ѝ са прозрачни и разсейват светлината.",
+      "Мечките са добри плувци, а полярните мечки могат да преплуват големи разстояния."
+    ],
+    gen: genDay4
+  },
+  {
+    title: "Ден 5 — Ред на действията",
+    emoji: "🦉", icon: "🧮", animal: "owl", color: "#8d6e63",
+    factsTitle: "Любопитно за бухалите",
+    habitatBg: "linear-gradient(160deg,#2c3e6b,#0f1b3d)",
+    habitatText: "#f0e6ff",
+    facts: [
+      "Бухалите могат да въртят глава почти на 270 градуса!",
+      "Специалните им пера им позволяват да летят почти безшумно.",
+      "Бухалите виждат отлично в тъмното, но не могат да движат очите си.",
+      "При много видове ушните отвори са разположени несиметрично и помагат да се открива плячка само по звук.",
+      "Бухалите имат три клепача: за мигане, за сън и за защита на окото."
+    ],
+    gen: genDay5
+  },
+  {
+    title: "Ден 6 — Смесено упражнение",
+    emoji: "🐟", icon: "🔀", animal: "fish", color: "#4fb0c6",
+    factsTitle: "Любопитно за рибките",
+    habitatBg: "linear-gradient(160deg,#a0e4f0,#4fb0c6)",
+    habitatText: "#0a3a45",
+    facts: [
+      "Рибите дишат чрез хриле, които извличат кислород от водата.",
+      "Някои риби могат да разпознават лицата на хората.",
+      "Повечето риби нямат клепачи, затова почиват с отворени очи.",
+      "Страничната линия по тялото им усеща движенията и вибрациите във водата.",
+      "Някои риби променят окраската си, за да се прикрият или да общуват с други риби."
+    ],
+    gen: genDay6
+  },
+  {
+    title: "Ден 7 — Обобщение за седмицата",
+    emoji: "🦁", icon: "🏁", animal: "lion", color: "#e9a23b",
+    factsTitle: "Любопитно за лъвовете",
+    habitatBg: "linear-gradient(160deg,#ffe8b0,#e9a23b)",
+    habitatText: "#5a3a0a",
+    facts: [
+      "Лъвът е единствената голяма котка, която живее на групи, наречени „прайд“.",
+      "Ревът на лъва се чува от 8 километра разстояние!",
+      "Повечето лов за прайда вършат лъвиците.",
+      "Лъвовете използват рев, мирис и движения на тялото, за да общуват и да пазят територията си.",
+      "Те прекарват голяма част от денонощието в почивка — често между 16 и 20 часа."
+    ],
+    gen: genDay7
+  },
+];
+
+function buildDays(){
+  return DAY_META.map(meta => ({
+    title: meta.title, emoji: meta.emoji, icon: meta.icon, animal: meta.animal, color: meta.color,
+    factsTitle: meta.factsTitle, habitatBg: meta.habitatBg, habitatText: meta.habitatText, facts: meta.facts,
+    questions: meta.gen()
+  }));
+}
+
+let DAYS = buildDays();
+
+/* ================= SCRATCH PANEL RENDERING (table based) ================= */
+function padCells(numOrNull, width){
+  if(numOrNull === null) return new Array(width).fill('EDIT');
+  const s = String(numOrNull);
+  const padded = s.padStart(width, ' ');
+  return padded.split('').map(ch => ch === ' ' ? '' : ch);
+}
+
+function renderVertical(op, a, b){
+  const width = 4;
+  const symbol = op === '*' ? '·' : op;
+  const cellsA = padCells(a, width);
+  const cellsB = padCells(b, width);
+  const isSub = op === '-' && a !== null;
+  const totalCols = width + 2;
+
+  let html = `<table class="vtable"><tbody>`;
+
+  html += `<tr><td></td><td></td>`;
+  for(let i=0;i<width;i++){
+    html += `<td class="vcell carry"><input type="text" maxlength="2"/></td>`;
+  }
+  html += `</tr>`;
+
+  html += `<tr><td></td><td></td>`;
+  cellsA.forEach(c=>{
+    if(c === 'EDIT'){
+      html += `<td class="vcell"><input type="text" maxlength="1"/></td>`;
+    } else if(c === ''){
+      html += `<td></td>`;
+    } else if(isSub){
+      html += `<td class="vcell borrow-toggle"><span>${c}</span></td>`;
+    } else {
+      html += `<td class="vcell">${c}</td>`;
+    }
+  });
+  html += `</tr>`;
+
+  html += `<tr><td></td><td class="vcell op">${symbol}</td>`;
+  cellsB.forEach(c=>{
+    if(c === 'EDIT'){
+      html += `<td class="vcell"><input type="text" maxlength="1"/></td>`;
+    } else {
+      html += `<td class="vcell">${c === '' ? '' : c}</td>`;
+    }
+  });
+  html += `</tr>`;
+
+  html += `<tr><td></td><td class="lineline" colspan="${width+1}"></td></tr>`;
+
+  html += `<tr>`;
+  for(let i=0;i<totalCols;i++){
+    html += `<td class="vcell"><input type="text" maxlength="1"/></td>`;
+  }
+  html += `</tr>`;
+
+  html += `</tbody></table>`;
+  if(isSub){
+    html = `<div class="scratch-hint">✏️ Ако вземаш назаем: кликни цифрата (ще се появи точка), после запиши <b>10</b> в квадратчето точно над цифрата, от която вземаш.</div>` + html;
+  }
+  return html;
+}
+
+function renderDivisionTail(a, b){
+  const digits = String(a).split('');
+  const n = digits.length;
+  const firstGroupLength = n > 1 && Number(digits[0]) < b ? 2 : 1;
+  const quotientDigits = Math.max(1,n-firstGroupLength+1);
+  const blankCell = ()=>`<span class="division-work-cell"></span>`;
+  const inputCell = label=>`<span class="division-work-cell"><input class="division-input" type="text" inputmode="numeric" maxlength="1" aria-label="${label}"></span>`;
+  const lineCell = ()=>`<span class="division-work-cell division-line-cell"></span>`;
+  const makeRow = (sign,cells,label,rowClass)=>`<div class="division-work-row ${rowClass || ''}"><span class="division-sign">${sign || ''}</span>${cells.join('')}<span class="${label ? 'division-remainder-label' : ''}">${label || ''}</span></div>`;
+
+  let quotient = '';
+  for(let i=0;i<quotientDigits;i++){
+    quotient += `<input class="division-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра ${i+1} от частното">`;
+  }
+
+  let work = '';
+  let cells = [];
+  for(let col=0;col<n;col++) cells.push(col<firstGroupLength ? inputCell('Цифра от първото произведение') : blankCell());
+  work += makeRow('−',cells,'');
+  cells = [];
+  for(let col=0;col<n;col++) cells.push(col<firstGroupLength ? lineCell() : blankCell());
+  work += makeRow('',cells,'','division-line-row');
+
+  let currentEnd = firstGroupLength-1;
+  for(let step=1;step<quotientDigits;step++){
+    const nextCol = currentEnd+1;
+    cells = [];
+    for(let col=0;col<n;col++){
+      if(col===currentEnd) cells.push(inputCell('Междинен остатък'));
+      else if(col===nextCol) cells.push(inputCell('Свалена следваща цифра'));
+      else cells.push(blankCell());
+    }
+    work += makeRow('',cells,'');
+
+    cells = [];
+    for(let col=0;col<n;col++) cells.push(col===currentEnd || col===nextCol ? inputCell('Цифра от произведението') : blankCell());
+    work += makeRow('−',cells,'');
+    cells = [];
+    for(let col=0;col<n;col++) cells.push(col===currentEnd || col===nextCol ? lineCell() : blankCell());
+    work += makeRow('',cells,'','division-line-row');
+    currentEnd = nextCol;
+  }
+
+  cells = [];
+  for(let col=0;col<n;col++) cells.push(col===currentEnd ? inputCell('Краен остатък') : blankCell());
+  work += makeRow('',cells,'остатък');
+
+  return `<div class="division-tail-card" data-dividend="${a}" data-divisor="${b}" style="--division-cols:${n}">
+    <div class="division-tail-title">Деление с опашка</div>
+    <div class="scratch-hint">✏️ Запиши частното, после умножавай, изваждай и сваляй следващата цифра. Кликни върху цифра от делимото, за да поставиш или махнеш точка над нея.</div>
+    <div class="division-equation">
+      <span class="division-dividend">${digits.map(d=>`<span class="fixed-digit division-dot-toggle" role="button" tabindex="0" aria-label="Постави точка над цифрата ${d}">${d}</span>`).join('')}</span>
+      <span>:</span><span class="fixed-digit">${b}</span><span>=</span><span class="division-quotient">${quotient}</span>
+    </div>
+    <div class="division-work">${work}</div>
+  </div>`;
+}
+
+function renderSubPanel(spec){
+  if(spec[0] === '+' || spec[0] === '-') return renderVertical(spec[0], spec[1], spec[2]);
+  if(spec[0] === '*'){
+    return `<div class="scratch-hint">✏️ Двата множителя са един до друг. Умножи ги и запиши произведението в празното поле.</div>
+      <div class="horizontal-multiplication">
+        <span class="factor">${spec[1]}</span><span class="multiply-sign">·</span><span class="factor">${spec[2]}</span>
+        <span class="equals-sign">=</span><input class="product-input" type="text" inputmode="numeric" aria-label="Произведение">
+      </div>`;
+  }
+  if(spec[0] === '/') return renderDivisionTail(spec[1], spec[2]);
+  return '';
+}
+
+function opWord(sym){
+  if(sym === '+') return 'събиране';
+  if(sym === '-') return 'изваждане';
+  if(sym === '*') return 'умножение';
+  if(sym === '/') return 'деление';
+  return '';
+}
+
+function renderSteps(steps){
+  let html = '<div class="steps-wrap">';
+  let stepNum = 1;
+  steps.forEach(spec=>{
+    if(spec[0] === 'note'){
+      html += `<div class="note-tip">💡 ${spec[1]}</div>`;
+    } else {
+      html += `<div class="step-box"><div class="step-label">Стъпка ${stepNum} — ${opWord(spec[0])}</div>${renderSubPanel(spec)}</div>`;
+      stepNum++;
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderScratch(spec){
+  if(!spec) return '';
+  if(spec[0] === 'steps') return renderSteps(spec[1]);
+  return renderSubPanel(spec);
+}
+
+function wireScratchPanel(panelEl){
+  panelEl.querySelectorAll('.borrow-toggle').forEach(cell=>{
+    cell.addEventListener('click', ()=> cell.classList.toggle('has-dot'));
+  });
+  panelEl.querySelectorAll('.division-dot-toggle').forEach(digit=>{
+    const toggleDot = ()=> digit.classList.toggle('has-dot');
+    digit.addEventListener('click',toggleDot);
+    digit.addEventListener('keydown',event=>{
+      if(event.key === 'Enter' || event.key === ' '){
+        event.preventDefault();
+        toggleDot();
+      }
+    });
+  });
+}
+
+function opFeedbackText(op){
+  if(op==='+') return '➕ Точно — ще съберем! ✅';
+  if(op==='-') return '➖ Вярно — ще извадим! ✅';
+  if(op==='*') return '✖️ Браво — ще умножим! ✅';
+  if(op==='/') return '➗ Супер — ще разделим! ✅';
+  return '✅';
+}
+
+/* ================= SOUND ================= */
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) audioCtx = new AC();
+  }
+  return audioCtx;
+}
+function animalTone(ctx, start, duration, fromHz, toHz, type, volume){
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(fromHz, start);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(30, toHz), start + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume || 0.18, start + Math.min(.05, duration/4));
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(start);
+  osc.stop(start + duration + .03);
+}
+
+function animalNoise(ctx, start, duration, frequency, volume){
+  const frameCount = Math.max(1, Math.floor(ctx.sampleRate * duration));
+  const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<frameCount;i++) data[i] = Math.random()*2-1;
+  const source = ctx.createBufferSource();
+  const filter = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  filter.type = 'bandpass';
+  filter.frequency.value = frequency;
+  filter.Q.value = 1.2;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume || .16, start + .025);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  source.start(start);
+}
+
+function speakEncouragement(){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const finalAnimal = document.getElementById('complete-animal-final');
+    const praise = [
+      'Браво! Справи се чудесно! Продължавай все така!',
+      'Отлична работа! Ти можеш! Продължавай смело!',
+      'Поздравления! Реши задачите чудесно! Гордея се с теб!'
+    ];
+    const utterance = new SpeechSynthesisUtterance(praise[Math.floor(Math.random()*praise.length)]);
+    utterance.lang = 'bg-BG';
+    utterance.rate = .9;
+    utterance.pitch = 1.08;
+    utterance.volume = .95;
+    const bgVoice = window.speechSynthesis.getVoices().find(v=>v.lang && v.lang.toLowerCase().startsWith('bg'));
+    if(bgVoice) utterance.voice = bgVoice;
+    const stopMouth = ()=> finalAnimal && finalAnimal.classList.remove('is-speaking');
+    utterance.onstart = ()=>{
+      if(finalAnimal){
+        finalAnimal.classList.remove('is-vocalizing');
+        finalAnimal.classList.add('is-speaking');
+      }
+    };
+    utterance.onend = stopMouth;
+    utterance.onerror = stopMouth;
+    if(finalAnimal) finalAnimal.classList.add('is-speaking');
+    window.speechSynthesis.speak(utterance);
+    setTimeout(stopMouth,9000);
+  }catch(e){ /* speech is optional */ }
+}
+
+function playAnimalCelebration(animal){
+  let speechDelay = 1200;
+  const finalAnimal = document.getElementById('complete-animal-final');
+  if(finalAnimal){
+    finalAnimal.classList.remove('is-speaking','is-vocalizing');
+    finalAnimal.classList.add('is-vocalizing');
+  }
+  try{
+    const ctx = getAudioCtx();
+    if(ctx){
+      if(ctx.state === 'suspended') ctx.resume();
+      const t = ctx.currentTime + .05;
+      if(animal === 'cat'){
+        animalTone(ctx,t,.42,520,940,'triangle',.20);
+        animalTone(ctx,t+.34,.50,880,390,'sine',.16);
+        speechDelay = 1050;
+      }else if(animal === 'dog'){
+        animalNoise(ctx,t,.20,420,.26);
+        animalTone(ctx,t,.20,190,115,'square',.10);
+        animalNoise(ctx,t+.32,.24,360,.24);
+        animalTone(ctx,t+.32,.23,170,95,'square',.09);
+        speechDelay = 900;
+      }else if(animal === 'rabbit'){
+        animalNoise(ctx,t,.12,1150,.09);
+        animalNoise(ctx,t+.18,.10,1350,.08);
+        animalNoise(ctx,t+.34,.13,1050,.09);
+        speechDelay = 750;
+      }else if(animal === 'bear'){
+        animalTone(ctx,t,.85,105,62,'sawtooth',.16);
+        animalNoise(ctx,t,.82,180,.15);
+        speechDelay = 1250;
+      }else if(animal === 'owl'){
+        animalTone(ctx,t,.48,330,220,'sine',.22);
+        animalTone(ctx,t+.62,.52,310,205,'sine',.20);
+        speechDelay = 1500;
+      }else if(animal === 'fish'){
+        [0,.18,.39,.61].forEach((d,i)=>animalTone(ctx,t+d,.13,720+i*85,150+i*20,'sine',.10));
+        speechDelay = 1050;
+      }else if(animal === 'lion'){
+        animalNoise(ctx,t,1.05,150,.23);
+        animalTone(ctx,t,1.08,115,58,'sawtooth',.18);
+        animalTone(ctx,t+.18,.82,78,48,'square',.07);
+        speechDelay = 1500;
+      }
+    }
+  }catch(e){ /* animal sound is optional */ }
+  setTimeout(()=>{
+    if(finalAnimal) finalAnimal.classList.remove('is-vocalizing');
+  },Math.max(450,speechDelay-80));
+  setTimeout(speakEncouragement, speechDelay);
+}
+
+/* ================= ANIMAL SVG BUILDER ================= */
+function svgAnimal(day){
+  const c = day.color;
+  const dark = shade(c, -30);
+  const light = shade(c, 40);
+
+  let earShape, featureShape, extraShape = "";
+  const a = day.animal;
+
+  function fillStyle(color){ return `style="--c:${color};--cs:${shade(color,-40)}"`; }
+
+  if(a === "cat"){
+    earShape = `
+      <polygon class="piece" data-piece="3" ${fillStyle(c)} points="72,40 60,10 92,32"/>
+      <polygon class="piece" data-piece="3" ${fillStyle(c)} points="148,40 160,10 128,32"/>
+      <polygon class="piece" data-piece="3" ${fillStyle('#ffd1e3')} points="75,36 68,20 86,30"/>
+      <polygon class="piece" data-piece="3" ${fillStyle('#ffd1e3')} points="145,36 152,20 134,30"/>`;
+    featureShape = `
+      <g class="piece piece-line" data-piece="14" data-wiggle="1">
+        <line x1="60" y1="92" x2="20" y2="86"/>
+        <line x1="60" y1="98" x2="18" y2="98"/>
+        <line x1="60" y1="104" x2="20" y2="110"/>
+        <line x1="160" y1="92" x2="200" y2="86"/>
+        <line x1="160" y1="98" x2="202" y2="98"/>
+        <line x1="160" y1="104" x2="200" y2="110"/>
+      </g>`;
+  } else if(a === "dog"){
+    earShape = `
+      <ellipse class="piece" data-piece="3" ${fillStyle(dark)} cx="66" cy="55" rx="16" ry="30" transform="rotate(-15 66 55)"/>
+      <ellipse class="piece" data-piece="3" ${fillStyle(dark)} cx="154" cy="55" rx="16" ry="30" transform="rotate(15 154 55)"/>`;
+    featureShape = `
+      <g class="piece" data-piece="14" ${fillStyle(dark)}>
+        <circle cx="70" cy="150" r="10"/>
+        <circle cx="140" cy="165" r="8"/>
+        <circle cx="100" cy="180" r="7"/>
+      </g>`;
+  } else if(a === "rabbit"){
+    earShape = `
+      <ellipse class="piece" data-piece="3" data-wiggle="1" ${fillStyle(c)} cx="85" cy="15" rx="13" ry="42" transform="rotate(-8 85 15)"/>
+      <ellipse class="piece" data-piece="3" data-wiggle="1" ${fillStyle(c)} cx="135" cy="15" rx="13" ry="42" transform="rotate(8 135 15)"/>
+      <ellipse class="piece" data-piece="3" ${fillStyle('#ffb6c1')} cx="85" cy="18" rx="6" ry="32" transform="rotate(-8 85 18)"/>
+      <ellipse class="piece" data-piece="3" ${fillStyle('#ffb6c1')} cx="135" cy="18" rx="6" ry="32" transform="rotate(8 135 18)"/>`;
+    featureShape = `
+      <g class="piece" data-piece="14">
+        <circle ${fillStyle('#ffb6c1')} cx="80" cy="90" r="9" opacity="0.85"/>
+        <circle ${fillStyle('#ffb6c1')} cx="140" cy="90" r="9" opacity="0.85"/>
+        <rect ${fillStyle('#ffffff')} x="104" y="95" width="6" height="10"/>
+        <rect ${fillStyle('#ffffff')} x="110" y="95" width="6" height="10"/>
+      </g>`;
+  } else if(a === "bear"){
+    earShape = `
+      <circle class="piece" data-piece="3" ${fillStyle(c)} cx="68" cy="42" r="18"/>
+      <circle class="piece" data-piece="3" ${fillStyle(c)} cx="152" cy="42" r="18"/>
+      <circle class="piece" data-piece="3" ${fillStyle(light)} cx="68" cy="42" r="9"/>
+      <circle class="piece" data-piece="3" ${fillStyle(light)} cx="152" cy="42" r="9"/>`;
+    featureShape = `
+      <g class="piece piece-line" data-piece="14" opacity="0.7">
+        <path d="M75,150 q35,15 70,0"/>
+        <path d="M80,165 q30,10 60,0"/>
+      </g>`;
+  } else if(a === "owl"){
+    earShape = `
+      <polygon class="piece" data-piece="3" ${fillStyle(dark)} points="75,45 60,10 95,35"/>
+      <polygon class="piece" data-piece="3" ${fillStyle(dark)} points="145,45 160,10 125,35"/>`;
+    featureShape = `
+      <g class="piece" data-piece="14" ${fillStyle(dark)} opacity="0.85">
+        <path d="M40,130 q-25,20 5,55 q15,-15 5,-55 z"/>
+        <path d="M180,130 q25,20 -5,55 q-15,-15 -5,-55 z"/>
+      </g>`;
+  } else if(a === "lion"){
+    extraShape = (function(){
+      let spikes = "";
+      for(let i=0;i<14;i++){
+        const ang = (i/14) * Math.PI * 2;
+        const cx = 110 + Math.cos(ang)*70;
+        const cy = 85 + Math.sin(ang)*70;
+        spikes += `<ellipse ${fillStyle(dark)} cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="20" ry="13" transform="rotate(${(ang*180/Math.PI).toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)})"/>`;
+      }
+      return `<g class="piece" data-piece="14" data-wiggle="1">${spikes}</g>`;
+    })();
+    earShape = `
+      <circle class="piece" data-piece="3" ${fillStyle(c)} cx="70" cy="45" r="14"/>
+      <circle class="piece" data-piece="3" ${fillStyle(c)} cx="150" cy="45" r="14"/>`;
+    featureShape = "";
+  }
+
+  if(a === "fish"){
+    return `
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+  <ellipse class="piece" data-piece="7" ${fillStyle(light)} cx="110" cy="150" rx="60" ry="30" opacity="0.6"/>
+  <path class="piece" data-piece="1" data-wiggle="1" ${fillStyle(dark)} d="M15,140 q95,-40 0,60 z"/>
+  <ellipse class="piece" data-piece="2" ${fillStyle(c)} cx="120" cy="140" rx="85" ry="55"/>
+  <path class="piece" data-piece="3" ${fillStyle(dark)} d="M110,45 q20,-25 40,-8 q-18,14 -40,8 z"/>
+  <path class="piece" data-piece="4" ${fillStyle(dark)} d="M60,120 q-15,20 -2,40 q22,-8 18,-32 z"/>
+  <path class="piece" data-piece="4" ${fillStyle(dark)} d="M160,120 q15,20 2,40 q-22,-8 -18,-32 z"/>
+  <circle class="piece" data-piece="9" ${fillStyle('#ffffff')} cx="150" cy="120" r="14"/>
+  <circle class="piece" data-piece="10" ${fillStyle('#ffffff')} cx="150" cy="120" r="14"/>
+  <circle class="piece" data-piece="11" ${fillStyle('#222222')} cx="154" cy="122" r="6"/>
+  <path class="piece" data-piece="12" ${fillStyle(dark)} d="M195,140 q15,8 0,16 q-8,-8 0,-16 z"/>
+  <path class="piece piece-line animal-mouth" data-piece="13" d="M170,155 q10,8 20,2"/>
+  <g class="piece piece-line" data-piece="14">
+    <path d="M75,110 q10,10 0,20"/>
+    <path d="M95,105 q10,10 0,20"/>
+    <path d="M115,105 q10,10 0,20"/>
+    <path d="M135,110 q10,10 0,20"/>
+  </g>
+</svg>`;
+  }
+
+  if(a === "owl"){
+    return `
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+  <ellipse class="piece" data-piece="1" ${fillStyle(c)} cx="110" cy="150" rx="62" ry="55"/>
+  <circle class="piece" data-piece="2" ${fillStyle(c)} cx="110" cy="80" r="50"/>
+  ${earShape}
+  <ellipse class="piece" data-piece="5" data-wiggle="1" ${fillStyle(dark)} cx="60" cy="150" rx="16" ry="30" transform="rotate(15 60 150)"/>
+  <ellipse class="piece" data-piece="6" data-wiggle="1" ${fillStyle(dark)} cx="160" cy="150" rx="16" ry="30" transform="rotate(-15 160 150)"/>
+  <path class="piece" data-piece="7" ${fillStyle('#f4a300')} d="M95,205 l6,-14 l6,14 z"/>
+  <path class="piece" data-piece="7" ${fillStyle('#f4a300')} d="M113,205 l6,-14 l6,14 z"/>
+  <ellipse class="piece" data-piece="8" ${fillStyle(light)} cx="110" cy="150" rx="34" ry="40"/>
+  <circle class="piece" data-piece="9" ${fillStyle('#ffffff')} cx="90" cy="78" r="18"/>
+  <circle class="piece" data-piece="10" ${fillStyle('#ffffff')} cx="130" cy="78" r="18"/>
+  <circle class="piece" data-piece="11" ${fillStyle('#222222')} cx="90" cy="80" r="8"/>
+  <circle class="piece" data-piece="11" ${fillStyle('#222222')} cx="130" cy="80" r="8"/>
+  <path class="piece animal-mouth" data-piece="12" ${fillStyle('#f4a300')} d="M104,95 l6,10 l6,-10 z"/>
+  ${featureShape}
+</svg>`;
+  }
+
+  return `
+<svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+  ${a === "lion" ? extraShape : ""}
+  <ellipse class="piece" data-piece="1" ${fillStyle(c)} cx="110" cy="152" rx="58" ry="46"/>
+  <circle class="piece" data-piece="2" ${fillStyle(c)} cx="110" cy="80" r="48"/>
+  ${earShape}
+  <ellipse class="piece" data-piece="5" ${fillStyle(dark)} cx="82" cy="192" rx="15" ry="11"/>
+  <ellipse class="piece" data-piece="6" ${fillStyle(dark)} cx="138" cy="192" rx="15" ry="11"/>
+  <path class="piece" data-piece="7" data-wiggle="1" ${fillStyle(c)} d="M165,150 q35,-10 30,20 q-15,10 -25,-5 z"/>
+  <ellipse class="piece" data-piece="8" ${fillStyle(light)} cx="110" cy="160" rx="32" ry="26"/>
+  <circle class="piece" data-piece="9" ${fillStyle('#ffffff')} cx="92" cy="75" r="12"/>
+  <circle class="piece" data-piece="10" ${fillStyle('#ffffff')} cx="128" cy="75" r="12"/>
+  <circle class="piece" data-piece="11" ${fillStyle('#222222')} cx="94" cy="78" r="5"/>
+  <circle class="piece" data-piece="11" ${fillStyle('#222222')} cx="130" cy="78" r="5"/>
+  <ellipse class="piece" data-piece="12" ${fillStyle('#333333')} cx="110" cy="92" rx="7" ry="5"/>
+  <path class="piece piece-line animal-mouth" data-piece="13" d="M98,100 q12,10 24,0"/>
+  ${featureShape}
+</svg>`;
+}
+
+function shade(hex, percent){
+  hex = hex.replace('#','');
+  const num = parseInt(hex,16);
+  let r = (num >> 16) + percent;
+  let g = ((num >> 8) & 0x00FF) + percent;
+  let b = (num & 0x0000FF) + percent;
+  r = Math.max(Math.min(255,r),0);
+  g = Math.max(Math.min(255,g),0);
+  b = Math.max(Math.min(255,b),0);
+  return "#" + (g | (r << 8) | (b << 16)).toString(16).padStart(6,'0');
+}
+
+/* ================= STATE ================= */
+let progress = {};
+try{
+  const saved = localStorage.getItem('math_game_progress_w4');
+  if(saved) progress = JSON.parse(saved);
+}catch(e){}
+
+let currentDay = 0;
+let currentQ = 0;
+let wrongAttempts = 0;
+let dayWrongTotal = 0;
+let opConfirmed = true;
+let sessionProgress = {};
+
+function saveProgress(){
+  try{ localStorage.setItem('math_game_progress_w4', JSON.stringify(progress)); }catch(e){}
+}
+
+/* ================= LEVEL SELECT ================= */
+let typingRun = 0;
+let typingInProgress = false;
+
+function typingPause(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+
+async function typeText(element, text, speed, runId){
+  element.textContent = '';
+  element.classList.add('typing-active');
+  for(const character of Array.from(text)){
+    if(runId !== typingRun) return false;
+    element.textContent += character;
+    await typingPause(speed);
+  }
+  element.classList.remove('typing-active');
+  return true;
+}
+
+function revealAllInstructions(){
+  typingRun++;
+  typingInProgress = false;
+  document.querySelectorAll('.how-to-play .type-target').forEach(element=>{
+    element.textContent = element.dataset.text || '';
+    element.classList.remove('typing-active');
+  });
+  document.querySelectorAll('.how-to-list li').forEach(item=>{
+    item.classList.remove('is-typing');
+    item.classList.add('is-complete');
+  });
+  document.getElementById('show-instructions-btn').textContent = 'Пусни анимацията отново';
+}
+
+async function startHowToTyping(){
+  const runId = ++typingRun;
+  typingInProgress = true;
+  const intro = document.getElementById('typing-intro');
+  const tip = document.getElementById('typing-tip');
+  const items = Array.from(document.querySelectorAll('.how-to-list li'));
+  const button = document.getElementById('show-instructions-btn');
+  button.textContent = 'Покажи целия текст';
+  document.querySelectorAll('.how-to-play .type-target').forEach(element=>{
+    element.textContent = '';
+    element.classList.remove('typing-active');
+  });
+  items.forEach(item=>item.classList.remove('is-typing','is-complete'));
+
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    revealAllInstructions();
+    return;
+  }
+
+  if(!await typeText(intro,intro.dataset.text,15,runId)) return;
+  await typingPause(220);
+  for(const item of items){
+    if(runId !== typingRun) return;
+    item.classList.add('is-typing');
+    const target = item.querySelector('.type-target');
+    if(!await typeText(target,target.dataset.text,12,runId)) return;
+    item.classList.remove('is-typing');
+    item.classList.add('is-complete');
+    await typingPause(110);
+  }
+  if(!await typeText(tip,tip.dataset.text,14,runId)) return;
+  typingInProgress = false;
+  button.textContent = 'Пусни анимацията отново';
+}
+
+document.getElementById('show-instructions-btn').addEventListener('click',()=>{
+  if(typingInProgress) revealAllInstructions();
+  else startHowToTyping();
+});
+
+function renderLevels(){
+  const grid = document.getElementById('levels-grid');
+  grid.innerHTML = "";
+  DAYS.forEach((day, idx)=>{
+    const p = sessionProgress[idx] || {done:false, stars:0};
+    const card = document.createElement('div');
+    card.className = 'level-card';
+    card.onclick = ()=> startDay(idx);
+    card.innerHTML = `
+      ${p.done ? '<div class="badge-done">✓</div>' : ''}
+      <div class="emoji">${p.done ? day.emoji : day.icon}</div>
+      <h3>${day.title.split('—')[0].trim()}</h3>
+      <p>${day.title.split('—')[1] ? day.title.split('—')[1].trim() : ''}</p>
+      ${p.done ? `<div class="stars">${starString(p.stars)}</div>` : ''}
+      ${!p.done ? '<div class="mystery-note">Реши задачите, за да разкриеш тайното животинче 🔍</div>' : ''}
+    `;
+    grid.appendChild(card);
+  });
+  showScreen('screen-levels');
+  startHowToTyping();
+}
+
+function starString(n){
+  n = n || 0;
+  let s = "";
+  for(let i=0;i<3;i++) s += i < n ? "⭐" : "☆";
+  return s;
+}
+
+function goToLevels(){ renderLevels(); }
+
+/* ================= GAME FLOW ================= */
+function startDay(idx){
+  currentDay = idx;
+  currentQ = 0;
+  dayWrongTotal = 0;
+  showScreen('screen-game');
+  renderAnimalStage();
+  loadQuestion();
+  document.getElementById('day-title-label').textContent = DAYS[idx].title;
+}
+
+function renderAnimalStage(){
+  const stage = document.getElementById('animal-stage');
+  stage.classList.remove('is-complete');
+  stage.innerHTML = svgAnimal(DAYS[currentDay]);
+}
+
+function updateRevealed(){
+  const stage = document.getElementById('animal-stage');
+  const pieces = stage.querySelectorAll('.piece');
+  pieces.forEach(p=>{
+    const pieceNum = parseInt(p.getAttribute('data-piece'), 10);
+    if(pieceNum <= currentQ){
+      p.classList.add('revealed');
+    } else {
+      p.classList.remove('revealed');
+    }
+  });
+}
+
+function loadQuestion(){
+  const day = DAYS[currentDay];
+  if(currentQ >= day.questions.length){
+    finishDay();
+    return;
+  }
+  wrongAttempts = 0;
+  const q = day.questions[currentQ];
+  document.getElementById('question-text').textContent = q.t;
+  document.getElementById('question-count').textContent = `Задача ${currentQ+1} от ${day.questions.length}`;
+  document.getElementById('progress-bar').style.width = `${(currentQ/day.questions.length)*100}%`;
+  document.getElementById('feedback').textContent = "";
+  document.getElementById('feedback').className = "feedback";
+  const input = document.getElementById('answer-input');
+  input.value = "";
+
+  const panel = document.getElementById('scratch-panel');
+  panel.innerHTML = renderScratch(q.s);
+  panel.classList.remove('open');
+  wireScratchPanel(panel);
+  const toggleBtn = document.getElementById('scratch-toggle-btn');
+  toggleBtn.classList.remove('active');
+
+  const opPicker = document.getElementById('op-picker');
+  const answerArea = document.getElementById('answer-area');
+  const opFeedback = document.getElementById('op-picker-feedback');
+  opFeedback.textContent = '';
+  opFeedback.className = 'op-picker-feedback';
+  document.querySelectorAll('.op-pick-btn').forEach(b=>b.classList.remove('correct','wrong'));
+
+  if(q.word){
+    opConfirmed = false;
+    opPicker.style.display = 'block';
+    answerArea.style.display = 'none';
+  } else {
+    opConfirmed = true;
+    opPicker.style.display = 'none';
+    answerArea.style.display = '';
+    input.focus();
+  }
+
+  updateRevealed();
+}
+
+document.getElementById('op-picker').addEventListener('click', function(e){
+  const btn = e.target.closest('.op-pick-btn');
+  if(!btn) return;
+  const day = DAYS[currentDay];
+  const q = day.questions[currentQ];
+  const picked = btn.dataset.op;
+  const fb = document.getElementById('op-picker-feedback');
+
+  if(picked === q.opFor){
+    document.querySelectorAll('.op-pick-btn').forEach(b=>b.classList.remove('wrong'));
+    btn.classList.add('correct');
+    fb.textContent = opFeedbackText(picked);
+    fb.className = 'op-picker-feedback good';
+    opConfirmed = true;
+    setTimeout(()=>{
+      document.getElementById('op-picker').style.display = 'none';
+      const answerArea = document.getElementById('answer-area');
+      answerArea.style.display = '';
+      document.getElementById('answer-input').focus();
+    }, 700);
+  } else {
+    btn.classList.add('wrong');
+    dayWrongTotal++;
+    fb.textContent = 'Хм, не съвсем — прочети пак внимателно условието 🤔';
+    fb.className = 'op-picker-feedback bad';
+    setTimeout(()=> btn.classList.remove('wrong'), 500);
+  }
+});
+
+function checkAnswer(){
+  if(!opConfirmed) return;
+  const day = DAYS[currentDay];
+  const input = document.getElementById('answer-input');
+  const val = parseFloat(input.value);
+  const feedback = document.getElementById('feedback');
+  if(isNaN(val)){
+    feedback.textContent = "Въведи число :)";
+    feedback.className = "feedback bad";
+    return;
+  }
+  const correct = day.questions[currentQ].a;
+  if(val === correct){
+    feedback.textContent = pickPraise();
+    feedback.className = "feedback good pop";
+    currentQ++;
+    launchConfettiBurst();
+    updateRevealed();
+    setTimeout(()=>{ loadQuestion(); }, 900);
+  } else {
+    wrongAttempts++;
+    dayWrongTotal++;
+    feedback.textContent = wrongAttempts >= 2 ? `Опитай пак — провери всяко действие поотделно. Може да ползваш полето за смятане 🧮` : "Почти! Опитай пак 💪";
+    feedback.className = "feedback bad shake";
+    input.classList.add('shake');
+    setTimeout(()=> input.classList.remove('shake'), 400);
+  }
+}
+
+document.getElementById('scratch-toggle-btn').addEventListener('click', function(){
+  const panel = document.getElementById('scratch-panel');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  this.classList.toggle('active', !isOpen);
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    const gameScreen = document.getElementById('screen-game');
+    if(gameScreen.classList.contains('active') && opConfirmed){
+      checkAnswer();
+    }
+  }
+});
+
+function pickPraise(){
+  const arr = ["Браво! 🎉","Точно така! ✅","Супер! 🌟","Отлично! 👏","Уцели! 🎯","Страхотно! 🥳"];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function finishDay(){
+  const day = DAYS[currentDay];
+  let stars = 3;
+  if(dayWrongTotal > 3) stars = 2;
+  if(dayWrongTotal > 7) stars = 1;
+  progress[currentDay] = { done:true, stars: Math.max(stars,1) };
+  sessionProgress[currentDay] = { done:true, stars: Math.max(stars,1) };
+  saveProgress();
+
+  document.getElementById('complete-emoji').textContent = day.emoji;
+  document.getElementById('complete-title').textContent = `Готово! Събуди се ${day.emoji}`;
+  const finalBox = document.getElementById('complete-animal-final');
+  finalBox.innerHTML = svgAnimal(day);
+  finalBox.classList.add('is-complete');
+  setTimeout(()=>{
+    finalBox.querySelectorAll('.piece').forEach(p=>p.classList.add('revealed'));
+  }, 50);
+  playAnimalCelebration(day.animal);
+  document.getElementById('complete-stars').textContent = starString(progress[currentDay].stars);
+  const starDescriptions = {
+    3: '3 звезди: до 3 грешни опита — чудесна и уверена работа!',
+    2: '2 звезди: от 4 до 7 грешни опита — много добро старание!',
+    1: '1 звезда: 8 или повече грешни опита — важното е, че не се отказа!'
+  };
+  document.getElementById('star-explanation').textContent = starDescriptions[progress[currentDay].stars] + ' Зачитат се и грешните избори на действие.';
+  document.getElementById('complete-msg').textContent = "Реши всички задачи за деня и събуди животинчето. Продължавай все така!";
+
+  const infoCard = document.getElementById('animal-info-card');
+  infoCard.style.background = day.habitatBg;
+  infoCard.style.color = day.habitatText || '#2d2d3a';
+  infoCard.innerHTML = `<h4>${day.emoji} ${day.factsTitle}</h4><ul>${day.facts.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+
+  const nextBtn = document.getElementById('next-day-btn');
+  if(currentDay + 1 < DAYS.length){
+    nextBtn.style.display = 'inline-block';
+  } else {
+    nextBtn.style.display = 'none';
+  }
+
+  showScreen('screen-complete');
+  launchConfettiBurst(40);
+}
+
+function nextDay(){
+  if(currentDay + 1 < DAYS.length){
+    startDay(currentDay + 1);
+  } else {
+    renderGallery();
+  }
+}
+
+function renderGallery(){
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = "";
+  DAYS.forEach(day=>{
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = svgAnimal(day) + `<div>${day.emoji} ${day.title.split('—')[0].trim()}</div>`;
+    grid.appendChild(item);
+  });
+  setTimeout(()=>{
+    document.querySelectorAll('#gallery-grid .piece').forEach(p=>p.classList.add('revealed'));
+  }, 50);
+  showScreen('screen-gallery');
+}
+
+/* ================= SCREEN SWITCH ================= */
+function showScreen(id){
+  if(id !== 'screen-levels'){
+    typingRun++;
+    typingInProgress = false;
+  }
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ================= CONFETTI ================= */
+function launchConfettiBurst(count){
+  count = count || 14;
+  const colors = ['#ff6b6b','#feca57','#1dd1a1','#54a0ff','#5f27cd','#ff9ff3'];
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (2 + Math.random()*1.5) + 's';
+    document.body.appendChild(el);
+    setTimeout(()=> el.remove(), 3600);
+  }
+}
+
+/* ================= INIT ================= */
+renderLevels();
+</script>
+</body>
+</html>
