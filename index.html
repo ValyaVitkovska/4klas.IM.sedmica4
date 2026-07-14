@@ -449,45 +449,72 @@
   .scratch-panel.open{ display:block; }
   .scratch-hint{ font-size:.78rem; color:#8a6d1a; margin-bottom:8px; }
   .horizontal-multiplication{
-    display:flex;
-    align-items:center;
+    display:grid;
+    grid-template-columns:auto 34px auto 34px auto;
+    grid-template-rows:34px 50px;
+    align-items:end;
     justify-content:center;
-    gap:10px;
+    gap:6px 8px;
     min-width:max-content;
     padding:10px 4px 4px;
   }
-  .horizontal-multiplication .factor{
+  .multiplication-carry-boxes{
+    grid-column:1;
+    grid-row:1;
+    display:flex;
+    gap:6px;
+  }
+  .multiplication-factor-a{ grid-column:1; grid-row:2; }
+  .multiplication-sign{ grid-column:2; grid-row:2; }
+  .multiplication-factor-b{ grid-column:3; grid-row:2; }
+  .multiplication-equals{ grid-column:4; grid-row:2; }
+  .multiplication-product{ grid-column:5; grid-row:2; }
+  .multiplication-digits{ display:flex; gap:6px; }
+  .multiplication-digit,
+  .multiplication-product-input{
     display:inline-flex;
-    min-width:52px;
-    min-height:46px;
+    width:46px;
+    height:46px;
     align-items:center;
     justify-content:center;
-    padding:6px 12px;
     border:2px solid #d8d0ff;
-    border-radius:12px;
+    border-radius:10px;
     background:#fff;
     color:var(--text);
     font-size:1.35rem;
     font-weight:900;
+    font-family:inherit;
+    text-align:center;
+    outline:none;
   }
-  .horizontal-multiplication .multiply-sign,
-  .horizontal-multiplication .equals-sign{
+  .multiplication-carry-input{
+    width:46px;
+    height:30px;
+    border:1.5px dashed #e1a84b;
+    border-radius:8px;
+    background:#fffdf6;
+    color:#b56b13;
+    font-family:inherit;
+    font-size:.95rem;
+    font-weight:800;
+    text-align:center;
+    outline:none;
+  }
+  .multiplication-carry-input:focus{
+    border-color:#d68118;
+    background:#fff8e7;
+  }
+  .multiplication-product-input:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(108,92,231,.12); }
+  .multiplication-sign,
+  .multiplication-equals{
+    display:flex;
+    height:46px;
+    align-items:center;
+    justify-content:center;
     color:var(--primary-dark);
     font-size:1.55rem;
     font-weight:900;
   }
-  .horizontal-multiplication .product-input{
-    width:88px;
-    min-height:46px;
-    border:2px solid #d8d0ff;
-    border-radius:12px;
-    background:#fff;
-    color:var(--text);
-    font:900 1.2rem inherit;
-    text-align:center;
-    outline:none;
-  }
-  .horizontal-multiplication .product-input:focus{ border-color:var(--primary); }
 
   table.vtable{
     border-collapse:collapse;
@@ -1259,10 +1286,21 @@ function renderDivisionTail(a, b){
 function renderSubPanel(spec){
   if(spec[0] === '+' || spec[0] === '-') return renderVertical(spec[0], spec[1], spec[2]);
   if(spec[0] === '*'){
-    return `<div class="scratch-hint">✏️ Двата множителя са един до друг. Умножи ги и запиши произведението в празното поле.</div>
+    const firstDigits = String(spec[1]).split('');
+    const secondDigits = String(spec[2]).split('');
+    const productLength = String(spec[1]*spec[2]).length;
+    const digitBoxes = digits=>digits.map(d=>`<span class="multiplication-digit">${d}</span>`).join('');
+    const carryBoxes = firstDigits.map((_,i)=>`<input class="multiplication-carry-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра за запомняне над позиция ${i+1}">`).join('');
+    let productBoxes = '';
+    for(let i=0;i<productLength;i++) productBoxes += `<input class="multiplication-product-input" type="text" inputmode="numeric" maxlength="1" aria-label="Цифра ${i+1} от произведението">`;
+    return `<div class="scratch-hint">✏️ Всяка цифра е в отделно квадратче. Записвай цифрите за пренос в празните квадратчета отгоре, а произведението — цифра по цифра вдясно.</div>
       <div class="horizontal-multiplication">
-        <span class="factor">${spec[1]}</span><span class="multiply-sign">·</span><span class="factor">${spec[2]}</span>
-        <span class="equals-sign">=</span><input class="product-input" type="text" inputmode="numeric" aria-label="Произведение">
+        <span class="multiplication-carry-boxes">${carryBoxes}</span>
+        <span class="multiplication-digits multiplication-factor-a">${digitBoxes(firstDigits)}</span>
+        <span class="multiplication-sign">·</span>
+        <span class="multiplication-digits multiplication-factor-b">${digitBoxes(secondDigits)}</span>
+        <span class="multiplication-equals">=</span>
+        <span class="multiplication-digits multiplication-product">${productBoxes}</span>
       </div>`;
   }
   if(spec[0] === '/') return renderDivisionTail(spec[1], spec[2]);
